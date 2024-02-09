@@ -12,8 +12,8 @@ import { cn } from './lib/utils';
 
 function App() {
 	const [quoteData, setQuoteData] = useState({
-		quote: '',
-		author: '',
+		quote: 'When you arise in the morning, think of what a precious privilege it is to be alive - to breathe, to think, to enjoy, to love.',
+		author: 'Marcus Aurelius',
 		textColor: '#1B1B1B',
 		bgColor: '#FFFFFF',
 	});
