@@ -77,10 +77,7 @@ function App() {
 					className={cn(
 						'relative w-[540px] h-[540px] flex-shrink-0 border-none rounded-none outline-1 outline-dashed outline-muted-foreground'
 					)}
-					style={{
-						backgroundColor: quoteData.bgColor,
-						fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif',
-					}}
+					style={{ backgroundColor: quoteData.bgColor }}
 				>
 					<div className="p-8 inset-0 absolute flex flex-col justify-center">
 						{quoteData.quote && (
