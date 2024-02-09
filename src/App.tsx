@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { createRef, useState } from 'react';
 // @ts-ignore
-import { useScreenshot, createFileName } from 'use-react-screenshot';
+import { createFileName, useScreenshot } from 'use-react-screenshot';
 import { cn } from './lib/utils';
 
 function App() {
@@ -96,7 +96,7 @@ function App() {
 						{/* Author */}
 						{quoteData.author && (
 							<p
-								className="font-semibold text-right w-full scroll-m-20 mt-8 text-2xl tracking-tight italic"
+								className="font-semibold text-right w-full scroll-m-20 mt-8 text-2xl tracking-tight italic break-words"
 								style={{
 									color: quoteData.textColor,
 								}}
@@ -166,6 +166,7 @@ function App() {
 						<Input
 							id="author"
 							name="author"
+							maxLength={64}
 							placeholder="Marcus Aurelius"
 							value={quoteData.author}
 							onChange={(e) =>
