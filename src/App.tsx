@@ -5,18 +5,25 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { createRef, useState } from 'react';
+import { createRef, useEffect, useState } from 'react';
 // @ts-ignore
 import { createFileName, useScreenshot } from 'use-react-screenshot';
 import { cn } from './lib/utils';
 
 function App() {
+	const [isLoading, setIsLoading] = useState(false);
 	const [quoteData, setQuoteData] = useState({
 		quote: 'When you arise in the morning, think of what a precious privilege it is to be alive - to breathe, to think, to enjoy, to love.',
 		author: 'Marcus Aurelius',
 		textColor: '#1B1B1B',
 		bgColor: '#FAFAFA',
 	});
+
+	useEffect(() => {
+		if (!isLoading && ref.current) {
+			resetRefScale(ref.current);
+		}
+	}, [isLoading]);
 
 	const ref = createRef<HTMLDivElement>();
 
@@ -32,7 +39,12 @@ function App() {
 		a.click();
 	};
 
-	const downloadScreenshot = () => takeScreenShot(ref.current).then(download);
+	const downloadScreenshot = () =>
+		takeScreenShot(scaleRef(ref.current, 2))
+			.then(download)
+			.finally(() => {
+				setIsLoading(false);
+			});
 
 	const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		let field = e.target.name;
@@ -65,8 +77,33 @@ function App() {
 		}));
 	};
 
+	const scaleRef = (ref: any, scaleFactor: number) => {
+		setIsLoading(true);
+		// Apply CSS transformations to scale the element
+		ref.style.transform = `scale(${scaleFactor})`;
+
+		// Scale font size if necessary
+		const currentFontSize = window.getComputedStyle(ref).fontSize;
+		const scaledFontSize = parseFloat(currentFontSize) * scaleFactor;
+		ref.style.fontSize = `${scaledFontSize}px`;
+
+		return ref;
+	};
+
+	const resetRefScale = (ref: any) => {
+		ref.style.transform = 'none';
+		ref.style.fontSize = 'inherit';
+	};
+
 	return (
-		<div className="container px-4 sm:px-8 flex flex-col gap-4 items-center justify-center min-h-svh w-full sm:w-[604px] lg:w-[1000px] xl:w-[1160px] py-4 lg:py-8 ">
+		<div className="container px-4 sm:px-8 flex flex-col gap-4 items-center justify-center min-h-svh w-full sm:w-[604px] lg:w-[1000px] xl:w-[1160px] py-4 lg:py-8 relative">
+			{/* Loading overlay */}
+			{isLoading && (
+				<div className="absolute inset-0 scale-[2] lg:scale-150 bg-white z-50 flex items-center justify-center">
+					<div className="animate-spin rounded-full h-12 lg:h-16 w-12 lg:w-16 border-t-2 border-b-2 border-primary"></div>
+				</div>
+			)}
+
 			<h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center mb-0 lg:mb-4">
 				Generate Quote
 			</h1>
