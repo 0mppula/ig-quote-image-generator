@@ -84,7 +84,9 @@ function App() {
 							<h2
 								className="break-words w-full scroll-m-20 text-4xl font-semibold"
 								style={{
-									color: quoteData.textColor,
+									color: quoteData.textColor, // Quote font
+									fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif',
+									lineHeight: '2.75rem',
 								}}
 							>
 								“{quoteData.quote}”
