@@ -66,7 +66,7 @@ function App() {
 	};
 
 	return (
-		<div className="container px-4 sm:px-8 flex flex-col gap-4 items-center justify-center min-h-svh w-[572px] sm:w-[604px] lg:w-[1000px] xl:w-[1160px]">
+		<div className="container px-4 sm:px-8 flex flex-col gap-4 items-center justify-center min-h-svh w-full sm:w-[604px] lg:w-[1000px] xl:w-[1160px]">
 			<h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center mb-0 lg:mb-4 mt-4 sm:mt-0">
 				Generate Quote
 			</h1>
@@ -75,18 +75,17 @@ function App() {
 				<Card
 					ref={ref}
 					className={cn(
-						'relative w-[540px] h-[540px] flex-shrink-0 border-none rounded-none outline-1 outline-dashed outline-muted-foreground'
+						'relative w-[calc(100svw-2rem)] h-[calc(100svw-2rem)] sm:w-[540px] sm:h-[540px] flex-shrink-0 border-none rounded-none outline-1 outline-dashed outline-muted-foreground'
 					)}
 					style={{ backgroundColor: quoteData.bgColor }}
 				>
 					<div className="p-8 inset-0 absolute flex flex-col justify-center">
 						{quoteData.quote && (
 							<h2
-								className="break-words w-full scroll-m-20 text-4xl font-semibold"
+								className="break-words w-full scroll-m-20 text-2xl sm:text-4xl leading-8 sm:leading-[2.75rem] font-semibold"
 								style={{
 									color: quoteData.textColor, // Quote font
 									fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif',
-									lineHeight: '2.75rem',
 								}}
 							>
 								“{quoteData.quote}”
@@ -96,7 +95,7 @@ function App() {
 						{/* Author */}
 						{quoteData.author && (
 							<p
-								className="font-semibold text-right w-full scroll-m-20 mt-8 text-2xl tracking-tight italic break-words"
+								className="font-semibold text-right w-full scroll-m-20 mt-8 text-xl sm:text-2xl tracking-tight italic break-words"
 								style={{
 									color: quoteData.textColor,
 								}}
