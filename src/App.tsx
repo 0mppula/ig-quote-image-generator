@@ -97,7 +97,7 @@ function App() {
 
 	function onSubmit(values: z.infer<typeof formSchema>) {
 		const trimmedValues = {
-			quote: values.quote.trim(),
+			quote: values.quote.replace(/[“""”]/g, '').trim(),
 			author: values.author.trim(),
 			textColor: values.textColor.trim(),
 			bgColor: values.bgColor.trim(),
