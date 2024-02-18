@@ -168,7 +168,7 @@ function App() {
 	};
 
 	const handleFullQuoteCopy = () => {
-		let fullQuote = quote;
+		let fullQuote = '“' + quote + '”';
 
 		if (author) {
 			fullQuote += '\n\n- ' + author;
