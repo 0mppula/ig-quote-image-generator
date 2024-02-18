@@ -1,39 +1,119 @@
+import { Card } from '@/components/ui/card';
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createRef, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Button } from './components/ui/button';
 import './global.css';
-
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { createRef, useEffect, useState } from 'react';
 // @ts-ignore
 import { createFileName, useScreenshot } from 'use-react-screenshot';
+import { z } from 'zod';
 import { cn } from './lib/utils';
 
+const formSchema = z.object({
+	quote: z.string().max(255),
+	author: z.string().max(64),
+	textColor: z.string(),
+	bgColor: z.string(),
+	quoteAppendix: z.string(),
+});
+
+type formSchemaType = z.infer<typeof formSchema>;
+
+const defaultQuoteData: formSchemaType = {
+	quote: 'When you arise in the morning, think of what a precious privilege it is to be alive - to breathe, to think, to enjoy, to love.',
+	author: 'Marcus Aurelius',
+	textColor: '#1B1B1B',
+	bgColor: '#FAFAFA',
+	quoteAppendix: 'Follow @lifeforcequotes for more!',
+};
+
 function App() {
+	const [isCopied, setIsCopied] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
-	const [quoteData, setQuoteData] = useState({
-		quote: 'When you arise in the morning, think of what a precious privilege it is to be alive - to breathe, to think, to enjoy, to love.',
-		author: 'Marcus Aurelius',
-		textColor: '#1B1B1B',
-		bgColor: '#FAFAFA',
-		quoteAppendix: 'Follow @lifeforcequotes for more!',
-	});
+	const ref = createRef<HTMLDivElement>();
+
+	// Reset the isCopied state after 2 seconds
+	useEffect(() => {
+		if (isCopied) {
+			const timeout = setTimeout(() => {
+				setIsCopied(false);
+			}, 2000);
+
+			return () => clearTimeout(timeout);
+		}
+	}, [isCopied]);
 
 	useEffect(() => {
 		if (!isLoading && ref.current) {
+			const resetRefScale = (ref: any) => {
+				ref.style.transform = 'none';
+				ref.style.fontSize = 'inherit';
+			};
+
 			resetRefScale(ref.current);
 		}
 	}, [isLoading]);
 
-	const ref = createRef<HTMLDivElement>();
+	const getQuoteDataFromLocalStorage = () => {
+		const data = localStorage.getItem('quoteData');
+
+		if (data) {
+			try {
+				const parsedData = JSON.parse(data);
+
+				return formSchema.parse(parsedData);
+			} catch (error) {
+				return defaultQuoteData;
+			}
+		} else {
+			return defaultQuoteData;
+		}
+	};
+
+	const saveQuoteDataToLocalStorage = (data: any) => {
+		localStorage.setItem('quoteData', JSON.stringify(data));
+	};
+
+	const form = useForm<z.infer<typeof formSchema>>({
+		resolver: zodResolver(formSchema),
+		defaultValues: getQuoteDataFromLocalStorage(),
+	});
+
+	const textColor = form.watch('textColor');
+	const bgColor = form.watch('bgColor');
+	const quote = form.watch('quote');
+	const author = form.watch('author');
+	const quoteAppendix = form.watch('quoteAppendix');
+
+	function onSubmit(values: z.infer<typeof formSchema>) {
+		const trimmedValues = {
+			quote: values.quote.trim(),
+			author: values.author.trim(),
+			textColor: values.textColor.trim(),
+			bgColor: values.bgColor.trim(),
+			quoteAppendix: values.quoteAppendix.trim(),
+		};
+
+		downloadScreenshot();
+		saveQuoteDataToLocalStorage(trimmedValues);
+	}
 
 	const [_, takeScreenShot] = useScreenshot({
 		type: 'image/jpeg',
 		quality: 4.0,
 	});
 
-	const download = (image: any, { name = quoteData.author.trim(), extension = 'jpg' } = {}) => {
+	const download = (image: any, { name = author.trim(), extension = 'jpg' } = {}) => {
 		const a = document.createElement('a');
 		a.href = image;
 		a.download = createFileName(extension, name);
@@ -51,31 +131,27 @@ function App() {
 		let field = e.target.name;
 		let hex = e.target.value.trim(); // Trim any leading or trailing spaces
 
-		setQuoteData((prev) => ({
-			...prev,
-			[field]: hex,
-		}));
+		form.setValue(field as 'textColor' | 'bgColor', hex.toUpperCase());
 	};
 
 	const handleHexBlur = (e: React.FocusEvent<HTMLInputElement>) => {
 		let field = e.target.name;
 		let hex = e.target.value.trim(); // Trim any leading or trailing space
 
-		// Remove dubplicate # if present
+		// Remove dubplicate # if present.
 		hex = hex.replace(/#/g, '');
 
+		// Add # to start if one is not present.
 		if (!hex.startsWith('#')) {
-			hex = '#' + hex; // Add # prefix if it's not present
+			hex = '#' + hex;
 		}
 
-		if (hex === '#') {
+		// Check if it's a valid hex color. If not, set it to white
+		if (!/^#[0-9A-F]{3,6}$/i.test(hex)) {
 			hex = '#ffffff';
 		}
 
-		setQuoteData((prev) => ({
-			...prev,
-			[field]: hex.toUpperCase(),
-		}));
+		form.setValue(field as 'textColor' | 'bgColor', hex.toUpperCase());
 	};
 
 	const scaleRef = (ref: any, scaleFactor: number) => {
@@ -91,23 +167,19 @@ function App() {
 		return ref;
 	};
 
-	const resetRefScale = (ref: any) => {
-		ref.style.transform = 'none';
-		ref.style.fontSize = 'inherit';
-	};
-
 	const handleFullQuoteCopy = () => {
-		let fullQuote = quoteData.quote;
+		let fullQuote = quote;
 
-		if (quoteData.author) {
-			fullQuote += '\n\n- ' + quoteData.author;
+		if (author) {
+			fullQuote += '\n\n- ' + author;
 		}
 
-		if (quoteData.quoteAppendix) {
-			fullQuote += '\n\n' + quoteData.quoteAppendix;
+		if (quoteAppendix) {
+			fullQuote += '\n\n' + quoteAppendix;
 		}
 
 		navigator.clipboard.writeText(fullQuote);
+		setIsCopied(true);
 	};
 
 	return (
@@ -129,130 +201,192 @@ function App() {
 					className={cn(
 						'relative w-[calc(100svw-2rem)] h-[calc(100svw-2rem)] sm:w-[540px] sm:h-[540px] flex-shrink-0 border-none rounded-none outline-1 outline-dashed outline-muted-foreground'
 					)}
-					style={{ backgroundColor: quoteData.bgColor }}
+					style={{ backgroundColor: bgColor }}
 				>
 					<div className="p-8 inset-0 absolute flex flex-col justify-center">
-						{quoteData.quote && (
+						{quote.replace(/[“""”]/g, '').trim() && (
 							<h2
 								className="break-words w-full scroll-m-20 text-2xl sm:text-4xl leading-8 sm:leading-[2.75rem] font-semibold"
 								style={{
-									color: quoteData.textColor, // Quote font
+									color: textColor,
 									fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif',
 								}}
 							>
-								“{quoteData.quote}”
+								“{quote.replace(/[“""”]/g, '').trim()}”
 							</h2>
 						)}
 
 						{/* Author */}
-						{quoteData.author && (
+						{author.trim() && (
 							<p
 								className="font-semibold text-right w-full scroll-m-20 mt-8 text-xl sm:text-2xl tracking-tight italic break-words"
 								style={{
-									color: quoteData.textColor,
+									color: textColor,
 								}}
 							>
-								- {quoteData.author.trim()}
+								- {author.trim()}
 							</p>
 						)}
 					</div>
 				</Card>
 
-				<div className="w-full flex flex-col gap-4">
-					<div className="flex gap-4 w-full">
-						<div className="w-full">
-							<Label className="mb-2 block" htmlFor="bgColor">
-								Background color
-							</Label>
+				<Form {...form}>
+					<form
+						className="w-full flex flex-col gap-4"
+						onSubmit={form.handleSubmit(onSubmit)}
+					>
+						<div className="flex gap-4 w-full">
+							<div className="w-full">
+								<FormField
+									control={form.control}
+									name="bgColor"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel className="mb-2 block">
+												Background color
+											</FormLabel>
 
-							<Input
-								id="bgColor"
-								name="bgColor"
-								placeholder="#ffffff"
-								value={quoteData.bgColor}
-								onBlur={(e) => handleHexBlur(e)}
-								onChange={(e) => handleHexChange(e)}
+											<FormControl>
+												<Input
+													placeholder="#ffffff"
+													{...field}
+													onBlur={(e) => handleHexBlur(e)}
+													onChange={(e) => handleHexChange(e)}
+												/>
+											</FormControl>
+
+											<FormDescription className="sr-only">
+												Sets the background color for the quote.
+											</FormDescription>
+										</FormItem>
+									)}
+								/>
+							</div>
+
+							<div className="w-full">
+								<FormField
+									control={form.control}
+									name="textColor"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel className="mb-2 block">Text color</FormLabel>
+
+											<FormControl>
+												<Input
+													placeholder="#1b1b1b"
+													{...field}
+													onBlur={(e) => handleHexBlur(e)}
+													onChange={(e) => handleHexChange(e)}
+												/>
+											</FormControl>
+
+											<FormDescription className="sr-only">
+												Sets the text color for the quote.
+											</FormDescription>
+										</FormItem>
+									)}
+								/>
+							</div>
+						</div>
+
+						<div className="w-full">
+							<FormField
+								control={form.control}
+								name="quote"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="text-left w-full mb-2 block">
+											Quote
+										</FormLabel>
+
+										<FormControl>
+											<Textarea
+												placeholder="When you arise in the morning, think of what a precious privilege it is to be alive - to breathe, to think, to enjoy, to love."
+												{...field}
+												rows={5}
+												maxLength={255}
+												onBlur={(e) =>
+													form.setValue('quote', e.target.value.trim())
+												}
+											/>
+										</FormControl>
+
+										<FormDescription className="text-right w-full">
+											{quote.length} / 255
+										</FormDescription>
+									</FormItem>
+								)}
 							/>
 						</div>
 
 						<div className="w-full">
-							<Label className="mb-2 block" htmlFor="textColor">
-								Text color
-							</Label>
+							<FormField
+								control={form.control}
+								name="author"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="mb-2 block">Author</FormLabel>
 
-							<Input
-								name="textColor"
-								id="textColor"
-								placeholder="#1b1b1b"
-								value={quoteData.textColor}
-								onBlur={(e) => handleHexBlur(e)}
-								onChange={(e) => handleHexChange(e)}
+										<FormControl>
+											<Input
+												maxLength={64}
+												placeholder="Marcus Aurelius"
+												{...field}
+												onBlur={(e) =>
+													form.setValue('author', e.target.value.trim())
+												}
+											/>
+										</FormControl>
+
+										<FormDescription className="text-right w-full">
+											{author.length} / 64
+										</FormDescription>
+									</FormItem>
+								)}
 							/>
 						</div>
-					</div>
 
-					<div className="w-full">
-						<Label className="text-left w-full mb-2 block" htmlFor="quote">
-							Quote
-						</Label>
+						<div className="w-full">
+							<FormField
+								control={form.control}
+								name="quoteAppendix"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel className="mb-2 block">Quote Appendix</FormLabel>
 
-						<Textarea
-							name="quote"
-							rows={5}
-							maxLength={255}
-							value={quoteData.quote}
-							onChange={(e) =>
-								setQuoteData((prev) => ({ ...prev, quote: e.target.value }))
-							}
-							id="quote"
-							placeholder="When you arise in the morning, think of what a precious privilege it is to be alive - to breathe, to think, to enjoy, to love."
-						/>
-					</div>
+										<FormControl>
+											<Input
+												placeholder="Follow @lifeforcequotes for more!"
+												{...field}
+												onBlur={(e) =>
+													form.setValue(
+														'quoteAppendix',
+														e.target.value.trim()
+													)
+												}
+											/>
+										</FormControl>
 
-					<div className="w-full">
-						<Label className="mb-2 block" htmlFor="author">
-							Author
-						</Label>
+										<FormDescription className="text-right w-full">
+											A short text to append to the quote. This will be
+											visible only when the quote is copied. (Optional)
+										</FormDescription>
+									</FormItem>
+								)}
+							/>
+						</div>
 
-						<Input
-							id="author"
-							name="author"
-							maxLength={64}
-							placeholder="Marcus Aurelius"
-							value={quoteData.author}
-							onChange={(e) =>
-								setQuoteData((prev) => ({ ...prev, author: e.target.value }))
-							}
-						/>
-					</div>
+						<div className="w-full flex gap-2 flex-col xs:flex-row">
+							<Button type="submit" className="w-full">
+								Download Image
+							</Button>
 
-					<div className="w-full">
-						<Label className="mb-2 block" htmlFor="quoteAppendix">
-							Quote Appendix
-						</Label>
-
-						<Input
-							id="quoteAppendix"
-							name="quoteAppendix"
-							maxLength={64}
-							placeholder="Follow @lifeforcequotes for more!"
-							value={quoteData.quoteAppendix}
-							onChange={(e) =>
-								setQuoteData((prev) => ({ ...prev, quoteAppendix: e.target.value }))
-							}
-						/>
-					</div>
-
-					<div className="w-full flex gap-2 flex-col xs:flex-row">
-						<Button className="w-full" onClick={downloadScreenshot}>
-							Download Image
-						</Button>
-
-						<Button className="w-full" onClick={handleFullQuoteCopy}>
-							Copy Full Quote
-						</Button>
-					</div>
-				</div>
+							<Button type="button" className="w-full" onClick={handleFullQuoteCopy}>
+								{isCopied ? 'Copied!' : 'Copy Full Quote'}
+							</Button>
+						</div>
+					</form>
+				</Form>
 			</div>
 		</div>
 	);
