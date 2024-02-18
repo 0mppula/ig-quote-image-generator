@@ -17,6 +17,7 @@ function App() {
 		author: 'Marcus Aurelius',
 		textColor: '#1B1B1B',
 		bgColor: '#FAFAFA',
+		quoteAppendix: 'Follow @lifeforcequotes for more!',
 	});
 
 	useEffect(() => {
@@ -93,6 +94,20 @@ function App() {
 	const resetRefScale = (ref: any) => {
 		ref.style.transform = 'none';
 		ref.style.fontSize = 'inherit';
+	};
+
+	const handleFullQuoteCopy = () => {
+		let fullQuote = quoteData.quote;
+
+		if (quoteData.author) {
+			fullQuote += '\n\n- ' + quoteData.author;
+		}
+
+		if (quoteData.quoteAppendix) {
+			fullQuote += '\n\n' + quoteData.quoteAppendix;
+		}
+
+		navigator.clipboard.writeText(fullQuote);
 	};
 
 	return (
@@ -211,9 +226,32 @@ function App() {
 						/>
 					</div>
 
-					<Button className="w-full" onClick={downloadScreenshot}>
-						Download Image
-					</Button>
+					<div className="w-full">
+						<Label className="mb-2 block" htmlFor="quoteAppendix">
+							Quote Appendix
+						</Label>
+
+						<Input
+							id="quoteAppendix"
+							name="quoteAppendix"
+							maxLength={64}
+							placeholder="Follow @lifeforcequotes for more!"
+							value={quoteData.quoteAppendix}
+							onChange={(e) =>
+								setQuoteData((prev) => ({ ...prev, quoteAppendix: e.target.value }))
+							}
+						/>
+					</div>
+
+					<div className="w-full flex gap-2 flex-col xs:flex-row">
+						<Button className="w-full" onClick={downloadScreenshot}>
+							Download Image
+						</Button>
+
+						<Button className="w-full" onClick={handleFullQuoteCopy}>
+							Copy Full Quote
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>
