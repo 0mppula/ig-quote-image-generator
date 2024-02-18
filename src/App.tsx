@@ -104,6 +104,8 @@ function App() {
 			quoteAppendix: values.quoteAppendix.trim(),
 		};
 
+		form.setValue('quote', trimmedValues.quote);
+
 		downloadScreenshot();
 		saveQuoteDataToLocalStorage(trimmedValues);
 	}
