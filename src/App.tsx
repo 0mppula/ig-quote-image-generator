@@ -174,7 +174,7 @@ function App() {
 	};
 
 	const handleFullQuoteCopy = () => {
-		let fullQuote = '“' + quote.replace(/[“""”]/g, '').trim() + '”' + '”';
+		let fullQuote = '“' + quote.replace(/[“""”]/g, '').trim() + '”';
 
 		if (author) {
 			fullQuote += '\n\n- ' + author;
