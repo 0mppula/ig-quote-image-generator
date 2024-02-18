@@ -105,6 +105,10 @@ function App() {
 		};
 
 		form.setValue('quote', trimmedValues.quote);
+		form.setValue('author', trimmedValues.author);
+		form.setValue('textColor', trimmedValues.textColor);
+		form.setValue('bgColor', trimmedValues.bgColor);
+		form.setValue('quoteAppendix', trimmedValues.quoteAppendix);
 
 		downloadScreenshot();
 		saveQuoteDataToLocalStorage(trimmedValues);
