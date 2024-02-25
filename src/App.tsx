@@ -11,11 +11,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Check, CheckCheck, Info } from 'lucide-react';
 import { createRef, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from './components/ui/button';
 import './global.css';
-import { Check, CheckCheck, Info } from 'lucide-react';
 // @ts-ignore
 import { createFileName, useScreenshot } from 'use-react-screenshot';
 import { z } from 'zod';
@@ -137,22 +137,37 @@ function App() {
 
 	const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		let field = e.target.name;
-		let hex = e.target.value.trim(); // Trim any leading or trailing spaces
+		let hex = e.target.value.trim();
 
 		form.setValue(field as 'textColor' | 'bgColor', hex.toUpperCase());
 	};
 
 	const handleHexBlur = (e: React.FocusEvent<HTMLInputElement>) => {
 		let field = e.target.name;
-		let hex = e.target.value.trim(); // Trim any leading or trailing space
+		let hex = e.target.value.trim();
 
-		// Remove dubplicate # if present.
+		// Remove # from the hex value.
 		hex = hex.replace(/#/g, '');
 
-		// Add # to start if one is not present.
-		if (!hex.startsWith('#')) {
-			hex = '#' + hex;
+		// Expand 3-digit hex to a 6-digit hex.
+		if (hex.length === 3) {
+			hex = hex
+				.split('')
+				.map((char) => char + char)
+				.join('');
 		}
+
+		// If hex value is between 4 and 5 characters, trim it to 3 characters and expand it to 6.
+		if (hex.length === 4 || hex.length === 5) {
+			hex = hex
+				.substring(0, 3)
+				.split('')
+				.map((char) => char + char)
+				.join('');
+		}
+
+		// Add # to the hex value.
+		hex = '#' + hex;
 
 		// Check if it's a valid hex color. If not, set it to white
 		if (!/^#[0-9A-F]{3,6}$/i.test(hex)) {
