@@ -15,8 +15,8 @@ import { createRef, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from './components/ui/button';
 import './global.css';
-// @ts-ignore
 import { Check, CheckCheck, Info } from 'lucide-react';
+// @ts-ignore
 import { createFileName, useScreenshot } from 'use-react-screenshot';
 import { z } from 'zod';
 import { cn } from './lib/utils';
