@@ -9,12 +9,14 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createRef, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from './components/ui/button';
 import './global.css';
 // @ts-ignore
+import { Check, CheckCheck, Info } from 'lucide-react';
 import { createFileName, useScreenshot } from 'use-react-screenshot';
 import { z } from 'zod';
 import { cn } from './lib/utils';
@@ -188,6 +190,35 @@ function App() {
 		setIsCopied(true);
 	};
 
+	const calculateContrastRatio = (hexColor1: string, hexColor2: string) => {
+		if (hexColor1.length !== 7 || hexColor2.length !== 7) return NaN;
+
+		const hexToRgb = (hex: string) => {
+			const r = parseInt(hex.substring(1, 3), 16);
+			const g = parseInt(hex.substring(3, 5), 16);
+			const b = parseInt(hex.substring(5, 7), 16);
+
+			return [r / 255, g / 255, b / 255];
+		};
+
+		const [r1, g1, b1] = hexToRgb(hexColor1);
+		const [r2, g2, b2] = hexToRgb(hexColor2);
+
+		const l1 =
+			0.2126 * (r1 <= 0.03928 ? r1 / 12.92 : Math.pow((r1 + 0.055) / 1.055, 2.4)) +
+			0.7152 * (g1 <= 0.03928 ? g1 / 12.92 : Math.pow((g1 + 0.055) / 1.055, 2.4)) +
+			0.0722 * (b1 <= 0.03928 ? b1 / 12.92 : Math.pow((b1 + 0.055) / 1.055, 2.4));
+
+		const l2 =
+			0.2126 * (r2 <= 0.03928 ? r2 / 12.92 : Math.pow((r2 + 0.055) / 1.055, 2.4)) +
+			0.7152 * (g2 <= 0.03928 ? g2 / 12.92 : Math.pow((g2 + 0.055) / 1.055, 2.4)) +
+			0.0722 * (b2 <= 0.03928 ? b2 / 12.92 : Math.pow((b2 + 0.055) / 1.055, 2.4));
+
+		const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+
+		return ratio;
+	};
+
 	return (
 		<div className="container px-4 sm:px-8 flex flex-col gap-4 items-center justify-center min-h-svh w-full sm:w-[604px] lg:w-[1000px] xl:w-[1160px] py-4 lg:py-8 relative">
 			{/* Loading overlay */}
@@ -202,39 +233,69 @@ function App() {
 			</h1>
 
 			<div className="flex w-full flex-col lg:flex-row gap-4 lg:gap-8">
-				<Card
-					ref={ref}
-					className={cn(
-						'relative w-[calc(100svw-2rem)] h-[calc(100svw-2rem)] sm:w-[540px] sm:h-[540px] flex-shrink-0 border-none rounded-none outline-1 outline-dashed outline-muted-foreground'
-					)}
-					style={{ backgroundColor: bgColor }}
-				>
-					<div className="p-8 inset-0 absolute flex flex-col justify-center">
-						{quote.replace(/[“""”]/g, '').trim() && (
-							<h2
-								className="break-words w-full scroll-m-20 text-2xl sm:text-4xl leading-8 sm:leading-[2.75rem] font-semibold"
-								style={{
-									color: textColor,
-									fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif',
-								}}
-							>
-								“{quote.replace(/[“""”]/g, '').trim()}”
-							</h2>
-						)}
+				<div className="relative">
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Card className="absolute bottom-4 right-4 z-20 py-1 px-2 flex gap-1 items-center justify-center">
+								{!isNaN(calculateContrastRatio(bgColor, textColor))
+									? calculateContrastRatio(bgColor, textColor).toFixed(2)
+									: '-'}
 
-						{/* Author */}
-						{author.trim() && (
-							<p
-								className="font-semibold text-right w-full scroll-m-20 mt-8 text-xl sm:text-2xl tracking-tight italic break-words"
-								style={{
-									color: textColor,
-								}}
-							>
-								- {author.trim()}
+								{!isNaN(calculateContrastRatio(bgColor, textColor)) ? (
+									calculateContrastRatio(bgColor, textColor) > 7.5 ? (
+										<CheckCheck className="w-4 h-4 text-green-800 mt-0.5" />
+									) : calculateContrastRatio(bgColor, textColor) > 4.5 ? (
+										<Check className="w-4 h-4 text-green-800 mt-0.5" />
+									) : (
+										<Info className="w-4 h-4 text-red-800 mt-0.5" />
+									)
+								) : null}
+							</Card>
+						</TooltipTrigger>
+
+						<TooltipContent>
+							<p>Contrast ratio of the text and background colors.</p>
+							<p>
+								<i>This will not appear on the quote image.</i>
 							</p>
+						</TooltipContent>
+					</Tooltip>
+
+					<Card
+						ref={ref}
+						className={cn(
+							'relative w-[calc(100svw-2rem)] h-[calc(100svw-2rem)] sm:w-[540px] sm:h-[540px] flex-shrink-0 border-none rounded-none outline-1 outline-dashed outline-muted-foreground'
 						)}
-					</div>
-				</Card>
+						style={{ backgroundColor: bgColor }}
+					>
+						<div className="p-8 inset-0 absolute flex flex-col justify-center">
+							{quote.replace(/[“""”]/g, '').trim() && (
+								<h2
+									className="break-words w-full scroll-m-20 text-2xl sm:text-4xl leading-8 sm:leading-[2.75rem] font-semibold"
+									style={{
+										color: textColor,
+										fontFamily:
+											'Georgia, Cambria, "Times New Roman", Times, serif',
+									}}
+								>
+									“{quote.replace(/[“""”]/g, '').trim()}”
+								</h2>
+							)}
+
+							{/* Author */}
+							{author.trim() && (
+								<p
+									className="font-semibold text-right w-full scroll-m-20 mt-8 text-xl sm:text-2xl tracking-tight italic break-words"
+									style={{
+										color: textColor,
+									}}
+								>
+									- {author.trim()}
+								</p>
+							)}
+						</div>
+					</Card>
+				</div>
 
 				<Form {...form}>
 					<form
