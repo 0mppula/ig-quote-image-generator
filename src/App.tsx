@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, CheckCheck, Info } from 'lucide-react';
 import { createRef, useEffect, useState } from 'react';
@@ -19,6 +18,11 @@ import './global.css';
 // @ts-ignore
 import { createFileName, useScreenshot } from 'use-react-screenshot';
 import { z } from 'zod';
+import {
+	HybridTooltip,
+	HybridTooltipContent,
+	HybridTooltipTrigger,
+} from './components/HybridTooltip';
 import { cn } from './lib/utils';
 
 const formSchema = z.object({
@@ -239,7 +243,7 @@ function App() {
 			{/* Loading overlay */}
 			{isLoading && (
 				<div className="absolute inset-0 scale-[2] lg:scale-150 bg-white z-50 flex items-center justify-center">
-					<div className="animate-spin rounded-full h-12 lg:h-16 w-12 lg:w-16 border-t-2 border-b-2 border-primary"></div>
+					<div className="animate-spin rounded-full h-12 lg:h-16 w-12 lg:w-16 border-t-2 border-b-2 border-primary" />
 				</div>
 			)}
 
@@ -249,8 +253,8 @@ function App() {
 
 			<div className="flex w-full flex-col lg:flex-row gap-4 lg:gap-8">
 				<div className="relative">
-					<Tooltip>
-						<TooltipTrigger asChild>
+					<HybridTooltip>
+						<HybridTooltipTrigger asChild>
 							<Card className="absolute bottom-4 right-4 z-20 py-1 px-2 flex gap-1 items-center justify-center">
 								{!isNaN(calculateContrastRatio(bgColor, textColor))
 									? calculateContrastRatio(bgColor, textColor).toFixed(2)
@@ -266,15 +270,15 @@ function App() {
 									)
 								) : null}
 							</Card>
-						</TooltipTrigger>
+						</HybridTooltipTrigger>
 
-						<TooltipContent>
+						<HybridTooltipContent>
 							<p>Contrast ratio of the text and background colors.</p>
 							<p>
 								<i>This will not appear on the quote image.</i>
 							</p>
-						</TooltipContent>
-					</Tooltip>
+						</HybridTooltipContent>
+					</HybridTooltip>
 
 					<Card
 						ref={ref}
