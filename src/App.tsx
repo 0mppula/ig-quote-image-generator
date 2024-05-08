@@ -416,6 +416,7 @@ function App() {
 
 											<FormControl>
 												<Input
+													className="pr-12"
 													placeholder="#ffffff"
 													{...field}
 													onBlur={(e) => handleHexBlur(e)}
@@ -455,6 +456,7 @@ function App() {
 
 											<FormControl>
 												<Input
+													className="pr-12"
 													placeholder="#1b1b1b"
 													{...field}
 													onBlur={(e) => handleHexBlur(e)}
