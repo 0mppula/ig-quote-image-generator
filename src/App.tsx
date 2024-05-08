@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, CheckCheck, Dices, Info } from 'lucide-react';
+import { Check, CheckCheck, Copy, Dices, Info } from 'lucide-react';
 import { createRef, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from './components/ui/button';
@@ -45,20 +45,44 @@ const defaultQuoteData: formSchemaType = {
 };
 
 function App() {
-	const [isCopied, setIsCopied] = useState(false);
+	const [isQuoteCopied, setIsQuoteCopied] = useState(false);
+	const [isTextColorCopied, setIsTextColorCopied] = useState(false);
+	const [isBgColorCopied, setIsBgColorCopied] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const ref = createRef<HTMLDivElement>();
 
-	// Reset the isCopied state after 2 seconds
+	// Reset the isQuoteCopied state after 2 seconds
 	useEffect(() => {
-		if (isCopied) {
+		if (isQuoteCopied) {
 			const timeout = setTimeout(() => {
-				setIsCopied(false);
+				setIsQuoteCopied(false);
 			}, 2000);
 
 			return () => clearTimeout(timeout);
 		}
-	}, [isCopied]);
+	}, [isQuoteCopied]);
+
+	// Reset the isTextColorCopied state after 2 seconds
+	useEffect(() => {
+		if (isTextColorCopied) {
+			const timeout = setTimeout(() => {
+				setIsTextColorCopied(false);
+			}, 2000);
+
+			return () => clearTimeout(timeout);
+		}
+	}, [isTextColorCopied]);
+
+	// Reset the isBgColorCopied state after 2 seconds
+	useEffect(() => {
+		if (isBgColorCopied) {
+			const timeout = setTimeout(() => {
+				setIsBgColorCopied(false);
+			}, 2000);
+
+			return () => clearTimeout(timeout);
+		}
+	}, [isBgColorCopied]);
 
 	useEffect(() => {
 		if (!isLoading && ref.current) {
@@ -207,7 +231,13 @@ function App() {
 		}
 
 		navigator.clipboard.writeText(fullQuote);
-		setIsCopied(true);
+		setIsQuoteCopied(true);
+	};
+
+	const handleColorCopy = (color: string, type: 'textColor' | 'bgColor') => {
+		navigator.clipboard.writeText(color);
+
+		type === 'textColor' ? setIsTextColorCopied(true) : setIsBgColorCopied(true);
 	};
 
 	const calculateContrastRatio = (hexColor1: string, hexColor2: string) => {
@@ -286,11 +316,20 @@ function App() {
 
 									{!isNaN(calculateContrastRatio(bgColor, textColor)) ? (
 										calculateContrastRatio(bgColor, textColor) > 7.5 ? (
-											<CheckCheck className="w-4 h-4 text-green-800 mt-0.5" />
+											<CheckCheck
+												className="w-4 h-4 text-green-800 mt-0.5"
+												aria-hidden
+											/>
 										) : calculateContrastRatio(bgColor, textColor) > 4.5 ? (
-											<Check className="w-4 h-4 text-green-800 mt-0.5" />
+											<Check
+												className="w-4 h-4 text-green-800 mt-0.5"
+												aria-hidden
+											/>
 										) : (
-											<Info className="w-4 h-4 text-red-800 mt-0.5" />
+											<Info
+												className="w-4 h-4 text-red-800 mt-0.5"
+												aria-hidden
+											/>
 										)
 									) : null}
 								</div>
@@ -311,7 +350,7 @@ function App() {
 									size="icon"
 									type="button"
 								>
-									<Dices className="w-4 h-4" />
+									<Dices className="w-4 h-4" aria-hidden />
 								</Button>
 							</TooltipTrigger>
 
@@ -365,7 +404,7 @@ function App() {
 						onSubmit={form.handleSubmit(onSubmit)}
 					>
 						<div className="flex gap-4 w-full">
-							<div className="w-full">
+							<div className="w-full relative">
 								<FormField
 									control={form.control}
 									name="bgColor"
@@ -390,9 +429,23 @@ function App() {
 										</FormItem>
 									)}
 								/>
+
+								<Button
+									onClick={() => handleColorCopy(bgColor, 'bgColor')}
+									variant="ghost"
+									size="icon"
+									type="button"
+									className="absolute top-[23px] right-[0px] w-[38px] h-[38px]"
+								>
+									{isBgColorCopied ? (
+										<Check className="w-4 h-4" aria-hidden />
+									) : (
+										<Copy className="w-4 h-4" aria-hidden />
+									)}
+								</Button>
 							</div>
 
-							<div className="w-full">
+							<div className="w-full relative">
 								<FormField
 									control={form.control}
 									name="textColor"
@@ -415,6 +468,20 @@ function App() {
 										</FormItem>
 									)}
 								/>
+
+								<Button
+									onClick={() => handleColorCopy(textColor, 'textColor')}
+									variant="ghost"
+									size="icon"
+									type="button"
+									className="absolute top-[23px] right-[0px] w-[38px] h-[38px]"
+								>
+									{isTextColorCopied ? (
+										<Check className="w-4 h-4" aria-hidden />
+									) : (
+										<Copy className="w-4 h-4" aria-hidden />
+									)}
+								</Button>
 							</div>
 						</div>
 
@@ -511,7 +578,7 @@ function App() {
 							</Button>
 
 							<Button type="button" className="w-full" onClick={handleFullQuoteCopy}>
-								{isCopied ? 'Copied!' : 'Copy Full Quote'}
+								{isQuoteCopied ? 'Copied!' : 'Copy Full Quote'}
 							</Button>
 						</div>
 					</form>
