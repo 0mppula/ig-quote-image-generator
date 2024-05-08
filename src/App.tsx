@@ -9,8 +9,9 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Check, CheckCheck, Info } from 'lucide-react';
+import { Check, CheckCheck, Dices, Info } from 'lucide-react';
 import { createRef, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from './components/ui/button';
@@ -238,6 +239,28 @@ function App() {
 		return ratio;
 	};
 
+	const generateRandomColor = () => {
+		return `#${Math.floor(Math.random() * 16777215)
+			.toString(16)
+			.toUpperCase()}`;
+	};
+
+	const handleGenerateRandomColors = () => {
+		let condition = true;
+
+		while (condition) {
+			const randomTextColor = generateRandomColor();
+			const randomBgColor = generateRandomColor();
+			const contrastRatio = calculateContrastRatio(randomBgColor, randomTextColor);
+
+			if (contrastRatio >= 7) {
+				form.setValue('textColor', randomTextColor);
+				form.setValue('bgColor', randomBgColor);
+				condition = false;
+			}
+		}
+	};
+
 	return (
 		<div className="container px-4 sm:px-8 flex flex-col gap-4 items-center justify-center min-h-svh w-full sm:w-[604px] lg:w-[1000px] xl:w-[1160px] py-4 lg:py-8 relative">
 			{/* Loading overlay */}
@@ -253,32 +276,52 @@ function App() {
 
 			<div className="flex w-full flex-col lg:flex-row gap-4 lg:gap-8">
 				<div className="relative">
-					<HybridTooltip>
-						<HybridTooltipTrigger asChild>
-							<Card className="absolute bottom-4 right-4 z-20 py-1 px-2 flex gap-1 items-center justify-center">
-								{!isNaN(calculateContrastRatio(bgColor, textColor))
-									? calculateContrastRatio(bgColor, textColor).toFixed(2)
-									: '-'}
+					<Card className="absolute bottom-4 right-4 z-20 py-1 px-2 flex gap-2 pr-1">
+						<HybridTooltip>
+							<HybridTooltipTrigger asChild>
+								<div className="flex gap-1 items-center justify-end min-w-[58px] ">
+									{!isNaN(calculateContrastRatio(bgColor, textColor))
+										? calculateContrastRatio(bgColor, textColor).toFixed(2)
+										: '-'}
 
-								{!isNaN(calculateContrastRatio(bgColor, textColor)) ? (
-									calculateContrastRatio(bgColor, textColor) > 7.5 ? (
-										<CheckCheck className="w-4 h-4 text-green-800 mt-0.5" />
-									) : calculateContrastRatio(bgColor, textColor) > 4.5 ? (
-										<Check className="w-4 h-4 text-green-800 mt-0.5" />
-									) : (
-										<Info className="w-4 h-4 text-red-800 mt-0.5" />
-									)
-								) : null}
-							</Card>
-						</HybridTooltipTrigger>
+									{!isNaN(calculateContrastRatio(bgColor, textColor)) ? (
+										calculateContrastRatio(bgColor, textColor) > 7.5 ? (
+											<CheckCheck className="w-4 h-4 text-green-800 mt-0.5" />
+										) : calculateContrastRatio(bgColor, textColor) > 4.5 ? (
+											<Check className="w-4 h-4 text-green-800 mt-0.5" />
+										) : (
+											<Info className="w-4 h-4 text-red-800 mt-0.5" />
+										)
+									) : null}
+								</div>
+							</HybridTooltipTrigger>
+							<HybridTooltipContent>
+								<p>Contrast ratio of the text and background colors.</p>
+								<p>
+									<i>This will not appear on the quote image.</i>
+								</p>
+							</HybridTooltipContent>
+						</HybridTooltip>
 
-						<HybridTooltipContent>
-							<p>Contrast ratio of the text and background colors.</p>
-							<p>
-								<i>This will not appear on the quote image.</i>
-							</p>
-						</HybridTooltipContent>
-					</HybridTooltip>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									variant="ghost"
+									onClick={handleGenerateRandomColors}
+									size="icon"
+									type="button"
+								>
+									<Dices className="w-4 h-4" />
+								</Button>
+							</TooltipTrigger>
+
+							<TooltipContent>
+								<p>
+									Generate random colors for the text and background of the quote.
+								</p>
+							</TooltipContent>
+						</Tooltip>
+					</Card>
 
 					<Card
 						ref={ref}
