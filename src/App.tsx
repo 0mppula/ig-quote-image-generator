@@ -120,8 +120,8 @@ function App() {
 		defaultValues: getQuoteDataFromLocalStorage(),
 	});
 
-	const textColor = form.watch('textColor');
-	const bgColor = form.watch('bgColor');
+	const textColor = form.watch('textColor') || '#1B1B1B';
+	const bgColor = form.watch('bgColor') || '#FAFAFA';
 	const quote = form.watch('quote');
 	const author = form.watch('author');
 	const quoteAppendix = form.watch('quoteAppendix');
@@ -270,7 +270,7 @@ function App() {
 	};
 
 	const generateRandomColor = () => {
-		return `#${Math.floor(Math.random() * 16777215)
+		return `#${Math.floor(Math.random() * 16_777_215)
 			.toString(16)
 			.toUpperCase()}`;
 	};
