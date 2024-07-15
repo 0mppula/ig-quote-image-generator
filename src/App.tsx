@@ -291,6 +291,8 @@ function App() {
 		}
 	};
 
+	console.log(calculateContrastRatio(bgColor, textColor));
+
 	return (
 		<div className="container px-4 sm:px-8 flex flex-col gap-4 items-center justify-center min-h-svh w-full sm:w-[604px] lg:w-[1000px] xl:w-[1160px] py-4 lg:py-8 relative">
 			{/* Loading overlay */}
