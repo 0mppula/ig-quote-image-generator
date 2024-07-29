@@ -11,20 +11,24 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { inject } from '@vercel/analytics';
 import { Check, CheckCheck, Copy, Dices, Info } from 'lucide-react';
 import { createRef, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Button } from './components/ui/button';
-import './global.css';
-// @ts-ignore
-import { createFileName, useScreenshot } from 'use-react-screenshot';
 import { z } from 'zod';
 import {
 	HybridTooltip,
 	HybridTooltipContent,
 	HybridTooltipTrigger,
 } from './components/HybridTooltip';
+import { Button } from './components/ui/button';
+import './global.css';
 import { cn } from './lib/utils';
+
+// @ts-ignore
+import { createFileName, useScreenshot } from 'use-react-screenshot';
+
+inject();
 
 const formSchema = z.object({
 	quote: z.string().max(255),
