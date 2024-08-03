@@ -503,6 +503,7 @@ function App() {
 
 										<FormControl>
 											<Textarea
+												className="resize-none"
 												placeholder="When you arise in the morning, think of what a precious privilege it is to be alive - to breathe, to think, to enjoy, to love."
 												{...field}
 												rows={5}
